@@ -1126,6 +1126,13 @@ app.add_middleware(
 )
 
 
+# Development middleware for CORS on static files
+try:
+    from open_webui.dev_cors_static import add_static_cors_middleware
+    add_static_cors_middleware(app, CORS_ALLOW_ORIGIN)
+except ImportError:
+    pass  # Does nothing if the file does not exist
+
 app.mount("/ws", socket_app)
 
 
