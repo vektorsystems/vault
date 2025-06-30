@@ -3,8 +3,17 @@ import { browser, dev } from '$app/environment';
 
 export const APP_NAME = 'Open WebUI';
 
-export const WEBUI_HOSTNAME = browser ? (dev ? `${location.hostname}:8080` : ``) : '';
-export const WEBUI_BASE_URL = browser ? (dev ? `http://${WEBUI_HOSTNAME}` : ``) : ``;
+// Get port from environment, reuse in multiple places
+const WEBUI_PORT = (globalThis as any).WEBUI_PORT || '8080';
+
+// Use PUBLIC_API_BASE_URL if defined, otherwise build from current location + WEBUI_PORT
+const API_BASE_URL = browser ? (dev ?
+	((globalThis as any).PUBLIC_API_BASE_URL ||
+	 `${location.protocol}//${location.hostname}:${WEBUI_PORT}`)
+	: ``) : '';
+
+export const WEBUI_HOSTNAME = browser ? (dev ? `${location.hostname}:${WEBUI_PORT}` : ``) : '';
+export const WEBUI_BASE_URL = API_BASE_URL;
 export const WEBUI_API_BASE_URL = `${WEBUI_BASE_URL}/api/v1`;
 
 export const OLLAMA_API_BASE_URL = `${WEBUI_BASE_URL}/ollama`;

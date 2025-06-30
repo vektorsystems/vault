@@ -32,7 +32,9 @@ export default defineConfig({
 	],
 	define: {
 		APP_VERSION: JSON.stringify(process.env.npm_package_version),
-		APP_BUILD_HASH: JSON.stringify(process.env.APP_BUILD_HASH || 'dev-build')
+		APP_BUILD_HASH: JSON.stringify(process.env.APP_BUILD_HASH || 'dev-build'),
+		PUBLIC_API_BASE_URL: JSON.stringify(process.env.PUBLIC_API_BASE_URL || ''),
+		WEBUI_PORT: JSON.stringify(process.env.WEBUI_PORT || '8080')
 	},
 	build: {
 		sourcemap: true
@@ -42,5 +44,13 @@ export default defineConfig({
 	},
 	esbuild: {
 		pure: ['console.log', 'console.debug']
+	},
+	server: {
+		host: true,
+		allowedHosts: [
+			'localhost',
+			'127.0.0.1',
+			'app.vault.dev'
+		]
 	}
 });
