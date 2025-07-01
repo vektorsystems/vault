@@ -9,7 +9,7 @@
 	import Modal from '../common/Modal.svelte';
 	import Account from './Settings/Account.svelte';
 	import About from './Settings/About.svelte';
-	import General from './Settings/Vault_General.svelte';
+	import General from './Settings/VaultGeneral.svelte';
 	import Interface from './Settings/Interface.svelte';
 	import Audio from './Settings/Audio.svelte';
 	import Chats from './Settings/Chats.svelte';

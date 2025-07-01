@@ -1,0 +1,141 @@
+version: '3.8'
+
+# =============================================================================
+# DOCKER COMPOSE FOR UBUNTU SERVER DEPLOYMENT
+# =============================================================================
+# This file is designed to deploy Vault AI on any Ubuntu 22.04+ server
+# using environment variables from the .env file
+# 
+# Usage:
+# 1. Copy .env.sample to .env and configure variables
+# 2. Run: docker-compose -f docker-compose.vault.yaml up -d
+# =============================================================================
+
+services:
+    # =============================================================================
+  # MAIN SERVICE - VAULT AI (Interface only, remote services)
+  # =============================================================================
+  vault-ai:
+    # Use pre-built image or build locally
+    image: ghcr.io/open-webui/open-webui:main
+    # If you prefer to build from source code, uncomment:
+    # build:
+    #   context: .
+    #   dockerfile: Dockerfile
+    container_name: vault-ai
+    restart: unless-stopped
+    
+    # Main port - change if needed
+    ports:
+      - "${WEBUI_PORT:-8080}:8080"
+    
+    # Environment variables from .env
+    environment:
+      # Basic configuration
+      - ENV=${ENV:-production}
+      - DOCKER=true
+      - PORT=8080
+      
+      # Base URLs and APIs (remote services)
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://your-ollama-server:11434}
+      - OPENAI_API_BASE_URL=${OPENAI_API_BASE_URL:-https://api.openai.com/v1}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      
+      # Application configuration
+      - WEBUI_NAME=${WEBUI_NAME:-Vault AI}
+      - WEBUI_DESCRIPTION=${WEBUI_DESCRIPTION:-Advanced Private AI interface}
+      - WEBUI_SECRET_KEY=${WEBUI_SECRET_KEY}
+      - WEBUI_AUTH=${WEBUI_AUTH:-true}
+      
+      # Database (remote recommended for production)
+      - DATABASE_URL=${DATABASE_URL:-sqlite:///app/backend/data/webui.db}
+      
+      # Security configuration
+      - CORS_ALLOW_ORIGIN=${CORS_ALLOW_ORIGIN:-*}
+      - WEBUI_SESSION_COOKIE_SECURE=${WEBUI_SESSION_COOKIE_SECURE:-true}
+      - WEBUI_AUTH_COOKIE_SECURE=${WEBUI_AUTH_COOKIE_SECURE:-true}
+      
+      # Logging
+      - GLOBAL_LOG_LEVEL=${GLOBAL_LOG_LEVEL:-INFO}
+      
+      # Optional features
+      - ENABLE_WEBSOCKET_SUPPORT=${ENABLE_WEBSOCKET_SUPPORT:-true}
+      - ENABLE_API_KEY=${ENABLE_API_KEY:-true}
+      - ENABLE_COMMUNITY_SHARING=${ENABLE_COMMUNITY_SHARING:-false}
+      - ENABLE_OAUTH_SIGNUP=${ENABLE_OAUTH_SIGNUP:-false}
+      
+      # OAuth configuration (if used)
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
+      - MICROSOFT_CLIENT_ID=${MICROSOFT_CLIENT_ID:-}
+      - MICROSOFT_CLIENT_SECRET=${MICROSOFT_CLIENT_SECRET:-}
+      - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID:-}
+      - GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET:-}
+      
+      # Timeouts and performance
+      - AIOHTTP_CLIENT_TIMEOUT=${AIOHTTP_CLIENT_TIMEOUT:-300}
+      - UVICORN_WORKERS=${UVICORN_WORKERS:-1}
+      
+      # Telemetry (disabled for privacy)
+      - SCARF_NO_ANALYTICS=true
+      - DO_NOT_TRACK=true
+      - ANONYMIZED_TELEMETRY=false
+      
+      # Model configuration
+      - RAG_EMBEDDING_MODEL=${RAG_EMBEDDING_MODEL:-sentence-transformers/all-MiniLM-L6-v2}
+      - WHISPER_MODEL=${WHISPER_MODEL:-base}
+      - USE_CUDA_DOCKER=${USE_CUDA_DOCKER:-false}
+    
+    # Persistent volumes
+    volumes:
+      - vault_ai_data:/app/backend/data
+      - vault_cache_data:/app/backend/data/cache
+    
+    # No local dependencies - all services are remote
+    
+    # Custom network (optional for remote services)
+    networks:
+      - vault-network
+    
+    # Health check configuration
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # =============================================================================
+  # REMOTE SERVICES - EXAMPLE CONFIGURATION
+  # =============================================================================
+  # All services are configured as remote via environment variables:
+  # 
+  # OLLAMA: Configure OLLAMA_BASE_URL=http://your-ollama-server:11434
+  # PostgreSQL: Configure DATABASE_URL=postgresql://user:pass@host:5432/dbname  
+  # Redis: Configure REDIS_URL=redis://your-redis-server:6379
+  # OpenAI: Configure OPENAI_API_KEY and OPENAI_API_BASE_URL
+  # 
+  # This allows for lightweight deployment with maximum flexibility
+
+# =============================================================================
+# PERSISTENT VOLUMES
+# =============================================================================
+volumes:
+  # Main application data (only volume needed)
+  vault_ai_data:
+    driver: local
+  
+  # Models and embeddings cache (downloaded automatically)
+  vault_cache_data:
+    driver: local
+
+# =============================================================================
+# CUSTOM NETWORK
+# =============================================================================
+networks:
+  vault-network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.20.0.0/16 
