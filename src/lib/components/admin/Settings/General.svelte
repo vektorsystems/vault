@@ -149,7 +149,7 @@
 									</a>
 								</div>
 
-								<button
+								<!-- <button
 									class=" underline flex items-center space-x-1 text-xs text-gray-500 dark:text-gray-500"
 									type="button"
 									on:click={() => {
@@ -157,7 +157,7 @@
 									}}
 								>
 									<div>{$i18n.t("See what's new")}</div>
-								</button>
+								</button> -->
 							</div>
 
 							<button

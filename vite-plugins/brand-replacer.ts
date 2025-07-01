@@ -40,6 +40,10 @@ export function brandReplacer(): Plugin {
           replace: brandConfig.community
         },
         {
+          search: /\b(WebUI)\b/g,
+          replace: brandConfig.name
+        },
+        {
           search: /\b(Open WebUI)\b/g,
           replace: brandConfig.name
         },

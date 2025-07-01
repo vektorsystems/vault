@@ -9,7 +9,7 @@
 	import Modal from '../common/Modal.svelte';
 	import Account from './Settings/Account.svelte';
 	import About from './Settings/About.svelte';
-	import General from './Settings/General.svelte';
+	import General from './Settings/Vault_General.svelte';
 	import Interface from './Settings/Interface.svelte';
 	import Audio from './Settings/Audio.svelte';
 	import Chats from './Settings/Chats.svelte';
@@ -416,54 +416,54 @@
 				'webhookurl'
 			]
 		},
-		{
-			id: 'about',
-			title: 'About',
-			keywords: [
-				'about app',
-				'about me',
-				'about open webui',
-				'about page',
-				'about us',
-				'aboutapp',
-				'aboutme',
-				'aboutopenwebui',
-				'aboutpage',
-				'aboutus',
-				'check for updates',
-				'checkforupdates',
-				'contact',
-				'copyright',
-				'details',
-				'discord',
-				'documentation',
-				'github',
-				'help',
-				'information',
-				'license',
-				'redistributions',
-				'release',
-				'see whats new',
-				'seewhatsnew',
-				'settings',
-				'software info',
-				'softwareinfo',
-				'support',
-				'terms and conditions',
-				'terms of use',
-				'termsandconditions',
-				'termsofuse',
-				'timothy jae ryang baek',
-				'timothy j baek',
-				'timothyjaeryangbaek',
-				'timothyjbaek',
-				'twitter',
-				'update info',
-				'updateinfo',
-				'version info',
-				'versioninfo'
-			]
-		}
+		// {
+		// 	id: 'about',
+		// 	title: 'About',
+		// 	keywords: [
+		// 		'about app',
+		// 		'about me',
+		// 		'about open webui',
+		// 		'about page',
+		// 		'about us',
+		// 		'aboutapp',
+		// 		'aboutme',
+		// 		'aboutopenwebui',
+		// 		'aboutpage',
+		// 		'aboutus',
+		// 		'check for updates',
+		// 		'checkforupdates',
+		// 		'contact',
+		// 		'copyright',
+		// 		'details',
+		// 		'discord',
+		// 		'documentation',
+		// 		'github',
+		// 		'help',
+		// 		'information',
+		// 		'license',
+		// 		'redistributions',
+		// 		'release',
+		// 		'see whats new',
+		// 		'seewhatsnew',
+		// 		'settings',
+		// 		'software info',
+		// 		'softwareinfo',
+		// 		'support',
+		// 		'terms and conditions',
+		// 		'terms of use',
+		// 		'termsandconditions',
+		// 		'termsofuse',
+		// 		'timothy jae ryang baek',
+		// 		'timothy j baek',
+		// 		'timothyjaeryangbaek',
+		// 		'timothyjbaek',
+		// 		'twitter',
+		// 		'update info',
+		// 		'updateinfo',
+		// 		'version info',
+		// 		'versioninfo'
+		// 	]
+		// }
 	];
 
 	let search = '';
