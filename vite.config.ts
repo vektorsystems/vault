@@ -2,6 +2,7 @@ import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
 
 import { viteStaticCopy } from 'vite-plugin-static-copy';
+import { brandReplacer } from './vite-plugins/brand-replacer';
 
 // /** @type {import('vite').Plugin} */
 // const viteServerConfig = {
@@ -20,6 +21,7 @@ import { viteStaticCopy } from 'vite-plugin-static-copy';
 export default defineConfig({
 	plugins: [
 		sveltekit(),
+		brandReplacer(),
 		viteStaticCopy({
 			targets: [
 				{
@@ -34,7 +36,8 @@ export default defineConfig({
 		APP_VERSION: JSON.stringify(process.env.npm_package_version),
 		APP_BUILD_HASH: JSON.stringify(process.env.APP_BUILD_HASH || 'dev-build'),
 		PUBLIC_API_BASE_URL: JSON.stringify(process.env.PUBLIC_API_BASE_URL || ''),
-		WEBUI_PORT: JSON.stringify(process.env.WEBUI_PORT || '8080')
+		WEBUI_PORT: JSON.stringify(process.env.WEBUI_PORT || '8080'),
+		WEBUI_NAME: JSON.stringify(process.env.WEBUI_NAME || 'Vault AI')
 	},
 	build: {
 		sourcemap: true
