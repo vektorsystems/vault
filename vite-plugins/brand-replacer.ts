@@ -8,23 +8,18 @@ interface BrandConfig {
 
 function getBrandConfig(): BrandConfig {
   return {
-    name: process.env.WEBUI_NAME || 'Open WebUI',
-    description: process.env.WEBUI_DESCRIPTION || 'Open WebUI is an open, extensible, user-friendly interface for AI that adapts to your workflow.',
-    community: process.env.WEBUI_COMMUNITY || 'Open WebUI Community'
+    name: process.env.WEBUI_NAME || 'Vault AI',
+    description: process.env.WEBUI_DESCRIPTION || 'Vault AI is private, extensible, user-friendly interface for AI.',
+    community: process.env.WEBUI_COMMUNITY || 'Vault AI Community'
   };
 }
 
 export function brandReplacer(): Plugin {
   const brandConfig = getBrandConfig();
-  
-  // Only apply replacements if we have a custom brand name
-  const shouldReplace = brandConfig.name !== 'Open WebUI';
-  
+
   return {
     name: 'brand-replacer',
     transform(code: string, id: string) {
-      if (!shouldReplace) return null;
-      
       // Skip node_modules and non-text files
       if (id.includes('node_modules') || 
           !(id.endsWith('.ts') || id.endsWith('.js') || id.endsWith('.svelte') || id.endsWith('.json'))) {
@@ -75,8 +70,6 @@ export function brandReplacer(): Plugin {
     },
     
     generateBundle(options, bundle) {
-      if (!shouldReplace) return;
-      
       // Process generated files (like HTML)
       Object.keys(bundle).forEach(fileName => {
         const file = bundle[fileName];
