@@ -86,7 +86,7 @@
 	import Navbar from '$lib/components/chat/Navbar.svelte';
 	import ChatControls from './ChatControls.svelte';
 	import EventConfirmDialog from '../common/ConfirmDialog.svelte';
-	import Placeholder from './Placeholder.svelte';
+	import VaultPlaceholder from './VaultPlaceholder.svelte';
 	import NotificationToast from '../NotificationToast.svelte';
 	import Spinner from '../common/Spinner.svelte';
 	import { fade } from 'svelte/transition';
@@ -2160,7 +2160,7 @@
 							</div>
 						{:else}
 							<div class="overflow-auto w-full h-full flex items-center">
-								<Placeholder
+								<VaultPlaceholder
 									{history}
 									{selectedModels}
 									bind:files
