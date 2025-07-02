@@ -24,7 +24,12 @@ run_cmd() {
 # Carga la configuración de despliegue
 load_deploy_config() {
     local script_dir="$1"
-    local config_path="$(cd "$script_dir/.." && pwd)/.env-deploy-config"
+    local config_path=""
+    if [ -n "$2" ]; then
+      config_path="$2"
+    else
+      config_path="$(cd "$script_dir/.." && pwd)/.env-deploy-config"
+    fi
     if [ -f "$config_path" ]; then
       export $(grep -v '^#' "$config_path" | xargs)
     else

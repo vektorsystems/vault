@@ -9,11 +9,9 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}" )" && pwd)"
 source "$SCRIPT_DIR/logger.sh"
 source "$SCRIPT_DIR/common.sh"
 
-load_deploy_config "$SCRIPT_DIR"
-if [ -z "$TEST_DEPLOY" ]; then
-  deploy_check_root
-  deploy_check_ubuntu
-fi
+INSTANCE_ID="$1"
+CONFIG_FILE=".env-deploy-config-${INSTANCE_ID}"
+load_deploy_config "$SCRIPT_DIR" "$SCRIPT_DIR/../$CONFIG_FILE"
 
 log_header "VAULT AI - STARTUP AND VERIFICATION"
 
