@@ -309,4 +309,5 @@ cypress/videos
 cypress/screenshots
 .vscode/settings.json
 
-vault_ia_deploy_key*
+# vault files
+!.env.vault.example
