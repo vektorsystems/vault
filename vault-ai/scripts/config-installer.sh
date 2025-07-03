@@ -161,5 +161,10 @@ WEBUI_NAME=${WEBUI_NAME}
 WEBUI_HOST=${WEBUI_HOST}
 EOF
 
-log_success "Configuration file ${CONFIG_FILE} created successfully."
-echo "CONFIG_FILE_CREATED=$CONFIG_FILE" 
+if [ $? -eq 0 ]; then
+    log_success "Configuration file ${CONFIG_FILE} created successfully."
+    echo "CONFIG_FILE_CREATED=${CONFIG_FILE}"
+else
+    log_error "Failed to create configuration file"
+    exit 1
+fi 

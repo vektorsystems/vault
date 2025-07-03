@@ -124,33 +124,3 @@ else
 fi
 
 log_success "Startup and verification completed successfully"
-
-# Installation Report
-log_task "Installation Summary"
-
-log_info "Installation Details:"
-echo "  • Instance ID: ${INSTANCE_ID}"
-echo "  • Installation Directory: ${VAULT_DIR}"
-echo "  • Service Name: ${SERVICE_NAME}"
-echo "  • Nginx Site: ${NGINX_SITE}"
-echo "  • Backend Port: $PORT"
-echo "  • Frontend: http://localhost"
-echo "  • Health Check: http://localhost/health"
-
-log_info "Service Management Commands:"
-echo "  • Check status: systemctl status ${SERVICE_NAME}"
-echo "  • View logs: journalctl -u ${SERVICE_NAME} -f"
-echo "  • Restart service: systemctl restart ${SERVICE_NAME}"
-echo "  • Stop service: systemctl stop ${SERVICE_NAME}"
-
-log_info "Nginx Management Commands:"
-echo "  • Check nginx status: systemctl status nginx"
-echo "  • Test nginx config: nginx -t"
-echo "  • Reload nginx: systemctl reload nginx"
-
-log_info "SSL Configuration (Optional):"
-echo "  • Configure SSL: certbot --nginx -d your-domain.com"
-echo "  • Auto-renewal: certbot renew --dry-run"
-
-log_success "Vault AI installation completed successfully!"
-log_info "You can now access Vault AI at: http://localhost" 

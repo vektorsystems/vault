@@ -25,6 +25,11 @@ load_deploy_config() {
     local script_dir="$1"
     local config_file="$2"
 
+    # If config_file is not an absolute path, look in the parent directory of script_dir
+    if [[ "$config_file" != /* ]]; then
+        config_file="$(dirname "$script_dir")/$config_file"
+    fi
+
     if [ ! -f "$config_file" ]; then
         log_error "Config file not found: $config_file"
         exit 1

@@ -308,3 +308,5 @@ dist
 cypress/videos
 cypress/screenshots
 .vscode/settings.json
+
+vault_ia_deploy_key*

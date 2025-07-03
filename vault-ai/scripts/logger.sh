@@ -139,7 +139,27 @@ get_ubuntu_version() {
     fi
 }
 
+# Clean logging without timestamps or prefixes
+log_clean() {
+    echo "$1"
+}
+
+# Color logging without timestamps or prefixes
+log_color() {
+    local color="$1"
+    local message="$2"
+    case "$color" in
+        "blue") color="${BLUE}" ;;
+        "cyan") color="${CYAN}" ;;
+        "green") color="${GREEN}" ;;
+        "yellow") color="${YELLOW}" ;;
+        "red") color="${RED}" ;;
+        *) color="${NC}" ;;
+    esac
+    echo -e "${color}${message}${NC}"
+}
+
 # Export functions for use in other scripts
 export -f log_info log_warn log_error log_success log_task log_test_mode
-export -f log_header log_section log_subsection
+export -f log_header log_section log_subsection log_clean log_color
 export -f show_progress command_exists is_root is_ubuntu get_ubuntu_version 

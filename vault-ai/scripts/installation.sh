@@ -179,19 +179,3 @@ else
 fi
 
 log_success "Installation and configuration completed successfully"
-
-# Print Installation Details
-log_section "2.5" "Installation Details"
-if [ "$TEST_DEPLOY" = "1" ]; then
-    log_info "Installation directory: $VAULT_DIR"
-    log_info "Service name: $SERVICE_NAME"
-    log_info "Web UI port: $PORT"
-    log_info "Database: $DB_NAME on $DB_HOST:$DB_PORT"
-    log_info "Web UI name: $WEBUI_NAME"
-else
-    log_info "Installation directory: $VAULT_DIR"
-    log_info "Service name: $SERVICE_NAME"
-    log_info "Web UI port: $(grep '^PORT=' $ENV_FILE | cut -d'=' -f2)"
-    log_info "Database: $(grep '^DB_NAME=' $ENV_FILE | cut -d'=' -f2) on $(grep '^DB_HOST=' $ENV_FILE | cut -d'=' -f2):$(grep '^DB_PORT=' $ENV_FILE | cut -d'=' -f2)"
-    log_info "Web UI name: $(grep '^WEBUI_NAME=' $ENV_FILE | cut -d'=' -f2)"
-fi 
