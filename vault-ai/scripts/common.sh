@@ -4,7 +4,7 @@
 # VAULT AI - COMMON UTILITIES
 # =============================================================================
 
-# Ejecuta un comando, loguea y maneja errores. Si TEST_DEPLOY=1, solo imprime el comando.
+# Run a command, log and handle errors. If TEST_DEPLOY=1, only print the command.
 run_cmd() {
     if [ "$TEST_DEPLOY" = "1" ]; then
         log_info "[TEST] Would run: $*"
@@ -20,45 +20,7 @@ run_cmd() {
     fi
 }
 
-# Carga la configuración de despliegue
-load_deploy_config() {
-    local script_dir="$1"
-    local config_file="$2"
-
-    # If config_file is not an absolute path, look in the parent directory of script_dir
-    if [[ "$config_file" != /* ]]; then
-        config_file="$(dirname "$script_dir")/$config_file"
-    fi
-
-    if [ ! -f "$config_file" ]; then
-        log_error "Config file not found: $config_file"
-        exit 1
-    fi
-
-    source "$config_file"
-}
-
-# Verifica si es root, excepto en modo test
-deploy_check_root() {
-    if [ "$TEST_DEPLOY" != "1" ]; then
-      if ! is_root; then
-          log_error "This script must be run as root (use sudo)"
-          exit 1
-      fi
-    fi
-}
-
-# Verifica si es Ubuntu, excepto en modo test
-deploy_check_ubuntu() {
-    if [ "$TEST_DEPLOY" != "1" ]; then
-      if ! is_ubuntu; then
-          log_error "This script is designed for Ubuntu systems only"
-          exit 1
-      fi
-    fi
-}
-
-# Simula o ejecuta cd según el modo
+# Simulate or execute cd based on mode
 run_cd() {
     local dir="$1"
     local error_msg="${2:-Failed to change directory to $dir}"
@@ -90,7 +52,7 @@ file_exists() {
     [ -f "$1" ]
 }
 
-# Simula o ejecuta un comando de verificación/chequeo (status, curl, etc.)
+# Simulate or execute a check command (status, curl, etc.)
 run_check() {
     if [ "$TEST_DEPLOY" = "1" ]; then
         log_info "[TEST] Would check: $*"
@@ -107,9 +69,6 @@ run_check() {
 }
 
 export -f run_cmd
-export -f load_deploy_config
-export -f deploy_check_root
-export -f deploy_check_ubuntu
 export -f run_cd
 export -f dir_exists
 export -f file_exists

@@ -9,10 +9,6 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}" )" && pwd)"
 source "$SCRIPT_DIR/logger.sh"
 source "$SCRIPT_DIR/common.sh"
 
-load_deploy_config "$SCRIPT_DIR"
-deploy_check_root
-deploy_check_ubuntu
-
 # Function to check service status
 check_status() {
     log_header "VAULT AI - SERVICE STATUS"
@@ -81,15 +77,15 @@ update_app() {
     run_cmd systemctl stop ${SERVICE_NAME}
     
     log_step "Updating repository..."
-    run_cd $VAULT_DIR
+    run_cd $VAULT_AI_DIR
     run_cmd sudo -u $VAULT_USER git pull
     
     log_step "Updating Python dependencies..."
-    run_cd $VAULT_DIR/backend
+    run_cd $VAULT_AI_DIR/backend
     run_cmd sudo -u $VAULT_USER bash -c "source ../venv/bin/activate && uv pip install --system -r requirements.txt"
     
     log_step "Updating Node.js dependencies..."
-    run_cd $VAULT_DIR
+    run_cd $VAULT_AI_DIR
     run_cmd sudo -u $VAULT_USER npm ci
     
     log_step "Rebuilding frontend..."
@@ -119,10 +115,9 @@ backup_config() {
     run_cmd mkdir -p $BACKUP_DIR
     
     log_step "Backing up configuration files..."
-    run_cmd cp -r $VAULT_DIR/.env $BACKUP_DIR/
-    run_cmd cp -r /etc/systemd/system/${SERVICE_NAME}.service $BACKUP_DIR/
-    run_cmd cp -r /etc/nginx/sites-available/vault-ai-${INSTANCE_ID} $BACKUP_DIR/
-    run_cmd cp -r /etc/logrotate.d/vault-ai-${INSTANCE_ID} $BACKUP_DIR/
+    run_cmd cp -r $VAULT_AI_DIR/.env $BACKUP_DIR/
+    run_cmd cp -r /etc/nginx/sites-available/vault-ai $BACKUP_DIR/
+    run_cmd cp -r /etc/logrotate.d/vault-ai $BACKUP_DIR/
     
     log_step "Creating backup archive..."
     run_cmd tar -czf "${BACKUP_DIR}.tar.gz" -C /opt $(basename $BACKUP_DIR)
@@ -152,15 +147,15 @@ uninstall() {
     run_cmd systemctl daemon-reload
     
     log_step "Removing nginx configuration..."
-    run_cmd rm -f /etc/nginx/sites-enabled/vault-ai-${INSTANCE_ID}
-    run_cmd rm -f /etc/nginx/sites-available/vault-ai-${INSTANCE_ID}
+    run_cmd rm -f /etc/nginx/sites-enabled/vault-ai
+    run_cmd rm -f /etc/nginx/sites-available/vault-ai
     
     log_step "Removing log rotation configuration..."
-    run_cmd rm -f /etc/logrotate.d/vault-ai-${INSTANCE_ID}
+    run_cmd rm -f /etc/logrotate.d/vault-ai
     
     log_step "Removing application files..."
-    run_cmd rm -rf $VAULT_DIR
-    run_cmd rm -rf /var/log/vault-ai-${INSTANCE_ID}
+    run_cmd rm -rf $VAULT_AI_DIR
+    run_cmd rm -rf /var/log/vault-ai
     
     log_step "Removing user and group..."
     run_cmd userdel $VAULT_USER 2>/dev/null || true

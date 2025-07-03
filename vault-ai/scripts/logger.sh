@@ -81,14 +81,15 @@ log_subsection() {
     local section_num="$1"
     local section_name="$2"
     echo
-    echo -e "${BLUE}  ${section_num} ${section_name}${NC}"
-    echo -e "${BLUE}  $(printf '%.s-' {1..75})${NC}"
+    echo -e "${BLUE} ${section_num} ${section_name}${NC}"
+    echo -e "${BLUE} $(printf '%.s-' {1..75})${NC}"
 }
 
 # Task header (used for individual tasks within sections)
 log_task() {
     local task_name="$1"
-    echo -e "${CYAN}  → ${task_name}${NC}"
+    echo -e ""
+    echo -e "${CYAN}→ ${task_name}${NC}"
 }
 
 # Progress indicator
