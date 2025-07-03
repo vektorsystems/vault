@@ -12,6 +12,15 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}" )" && pwd)"
 source "$SCRIPT_DIR/scripts/logger.sh"
 source "$SCRIPT_DIR/scripts/common.sh"
 
+# Define deployment scripts with descriptive names
+declare -A DEPLOY_SCRIPTS=(
+    [CONFIG_INSTALLER]="config-installer"
+    [PREREQUISITES]="prerequisites"
+    [APP_INSTALL]="installation"
+    [SERVICES]="services"
+    [STARTUP]="startup"
+)
+
 # Print the main header at the very start of the script
 log_header "VAULT AI - NATIVE DEPLOYMENT SCRIPT"
 
@@ -28,7 +37,7 @@ done
 log_section "1" "Deploy Config Installer"
 
 # Always run config installer and capture output
-CONFIG_INSTALLER_OUTPUT=$(bash "$SCRIPT_DIR/deploy-config-installer.sh" $TEST_ARGS)
+CONFIG_INSTALLER_OUTPUT=$(bash "$SCRIPT_DIR/scripts/${DEPLOY_SCRIPTS[CONFIG_INSTALLER]}.sh" $TEST_ARGS)
 if [ $? -ne 0 ]; then
   log_error "Configuration was not confirmed. Exiting."
   exit 1
@@ -67,7 +76,7 @@ log_section "2" "Installation Process"
 
 # Prerequisites
 log_subsection "2.1" "Prerequisites Installation"
-if bash "$SCRIPT_DIR/scripts/01-prerequisites.sh" "$INSTANCE_ID" "2.1" $TEST_ARGS; then
+if bash "$SCRIPT_DIR/scripts/${DEPLOY_SCRIPTS[PREREQUISITES]}.sh" "$INSTANCE_ID" "2.1" $TEST_ARGS; then
     log_success "Prerequisites installation completed"
 else
     log_error "Prerequisites installation failed"
@@ -76,7 +85,7 @@ fi
 
 # Application Installation
 log_subsection "2.2" "Application Installation"
-if bash "$SCRIPT_DIR/scripts/02-installation.sh" "$INSTANCE_ID" "2.2" $TEST_ARGS; then
+if bash "$SCRIPT_DIR/scripts/${DEPLOY_SCRIPTS[APP_INSTALL]}.sh" "$INSTANCE_ID" "2.2" $TEST_ARGS; then
     log_success "Application installation completed"
 else
     log_error "Application installation failed"
@@ -85,7 +94,7 @@ fi
 
 # Services Configuration
 log_subsection "2.3" "Services Configuration"
-if bash "$SCRIPT_DIR/scripts/03-services.sh" "$INSTANCE_ID" "2.3" $TEST_ARGS; then
+if bash "$SCRIPT_DIR/scripts/${DEPLOY_SCRIPTS[SERVICES]}.sh" "$INSTANCE_ID" "2.3" $TEST_ARGS; then
     log_success "Services configuration completed"
 else
     log_error "Services configuration failed"
@@ -94,7 +103,7 @@ fi
 
 # Startup and Verification
 log_subsection "2.4" "Startup and Verification"
-if bash "$SCRIPT_DIR/scripts/04-startup.sh" "$INSTANCE_ID" "2.4" $TEST_ARGS; then
+if bash "$SCRIPT_DIR/scripts/${DEPLOY_SCRIPTS[STARTUP]}.sh" "$INSTANCE_ID" "2.4" $TEST_ARGS; then
     log_success "Startup and verification completed"
 else
     log_error "Startup and verification failed"

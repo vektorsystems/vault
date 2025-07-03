@@ -6,11 +6,11 @@
 
 # Source the logger and common scripts
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}" )" && pwd)"
-if ! source "$SCRIPT_DIR/scripts/logger.sh"; then
+if ! source "$SCRIPT_DIR/logger.sh"; then
   echo "[ERROR] Failed to source logger.sh" >&2
   exit 1
 fi
-if ! source "$SCRIPT_DIR/scripts/common.sh"; then
+if ! source "$SCRIPT_DIR/common.sh"; then
   log_error "Failed to source common.sh"
   exit 1
 fi
@@ -64,7 +64,7 @@ log_task "Configuring application settings"
 get_default_from_example() {
   local var="$1"
   local fallback="$2"
-  local val=$(grep -E "^$var=" "$SCRIPT_DIR/.env.vault-ai.example" | head -n1 | cut -d'=' -f2-)
+  local val=$(grep -E "^$var=" "$SCRIPT_DIR/../.env.vault-ai.example" | head -n1 | cut -d'=' -f2-)
   if [ -z "$val" ]; then
     echo "$fallback"
   else
@@ -162,4 +162,4 @@ WEBUI_HOST=${WEBUI_HOST}
 EOF
 
 log_success "Configuration file ${CONFIG_FILE} created successfully."
-echo "CONFIG_FILE_CREATED=$CONFIG_FILE"
+echo "CONFIG_FILE_CREATED=$CONFIG_FILE" 
