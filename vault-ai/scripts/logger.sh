@@ -52,20 +52,43 @@ log_success() {
     fi
 }
 
-log_step() {
-    echo -e "${CYAN}[STEP]${NC} $(get_timestamp) - $1"
+# Test mode announcement (all yellow, uppercase)
+log_test_mode() {
+    if [ $CURRENT_LOG_LEVEL -le $LOG_LEVEL_INFO ]; then
+        echo -e "${YELLOW}[INFO] $(get_timestamp) - RUNNING IN TEST MODE: NO REAL CHANGES WILL BE MADE${NC}"
+    fi
 }
 
+# Main script header (used only once at the start)
 log_header() {
     echo -e "${PURPLE}=============================================================================${NC}"
     echo -e "${PURPLE} $1${NC}"
     echo -e "${PURPLE}=============================================================================${NC}"
 }
 
-log_subheader() {
+# Main section header (used for top-level sections)
+log_section() {
+    local section_num="$1"
+    local section_name="$2"
+    echo
     echo -e "${CYAN}-----------------------------------------------------------------------------${NC}"
-    echo -e "${CYAN} $1${NC}"
+    echo -e "${CYAN} ${section_num} ${section_name}${NC}"
     echo -e "${CYAN}-----------------------------------------------------------------------------${NC}"
+}
+
+# Sub-section header (used for nested sections)
+log_subsection() {
+    local section_num="$1"
+    local section_name="$2"
+    echo
+    echo -e "${BLUE}  ${section_num} ${section_name}${NC}"
+    echo -e "${BLUE}  $(printf '%.s-' {1..75})${NC}"
+}
+
+# Task header (used for individual tasks within sections)
+log_task() {
+    local task_name="$1"
+    echo -e "${CYAN}  → ${task_name}${NC}"
 }
 
 # Progress indicator
@@ -117,5 +140,6 @@ get_ubuntu_version() {
 }
 
 # Export functions for use in other scripts
-export -f log_info log_warn log_error log_success log_step log_header log_subheader
+export -f log_info log_warn log_error log_success log_task log_test_mode
+export -f log_header log_section log_subsection
 export -f show_progress command_exists is_root is_ubuntu get_ubuntu_version 

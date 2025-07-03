@@ -7,6 +7,14 @@
 # Usage: bash deploy-native.sh [--test]
 # =============================================================================
 
+# Source the logger
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}" )" && pwd)"
+source "$SCRIPT_DIR/scripts/logger.sh"
+source "$SCRIPT_DIR/scripts/common.sh"
+
+# Print the main header at the very start of the script
+log_header "VAULT AI - NATIVE DEPLOYMENT SCRIPT"
+
 # Parse --test flag
 TEST_ARGS=""
 for arg in "$@"; do
@@ -16,22 +24,14 @@ for arg in "$@"; do
   fi
 done
 
-# Source the logger
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}" )" && pwd)"
-source "$SCRIPT_DIR/scripts/logger.sh"
-source "$SCRIPT_DIR/scripts/common.sh"
+# Section 1: Deploy Config Installer
+log_section "1" "Deploy Config Installer"
 
 # Always run config installer and capture output
 CONFIG_INSTALLER_OUTPUT=$(bash "$SCRIPT_DIR/deploy-config-installer.sh" $TEST_ARGS)
 if [ $? -ne 0 ]; then
   log_error "Configuration was not confirmed. Exiting."
   exit 1
-fi
-
-# If the user did not confirm deploy, just print the output and exit
-if ! echo "$CONFIG_INSTALLER_OUTPUT" | grep -q "DEPLOY_START=1"; then
-  echo "$CONFIG_INSTALLER_OUTPUT"
-  exit 0
 fi
 
 # Parse config file name and INSTANCE_ID
@@ -47,48 +47,54 @@ fi
 load_deploy_config "$SCRIPT_DIR" "$CONFIG_FILE"
 VAULT_DIR=$(grep VAULT_DIR "$CONFIG_FILE" | cut -d'=' -f2)
 
-log_header "VAULT AI - NATIVE DEPLOYMENT SCRIPT"
-
 if [ "$TEST_DEPLOY" = "1" ]; then
-  log_info "Running in TEST mode: no real changes will be made."
+  log_test_mode
 fi
 
 # Installation start time
 START_TIME=$(date +%s)
 
-# Execute installation scripts in sequence, passing INSTANCE_ID and --test if set
-log_subheader "Starting Installation Process"
+# Add confirmation prompt after config file is created and validated, before installation steps
+read -p "Do you want to start the deploy now? [y/N]: " START_DEPLOY
+START_DEPLOY=${START_DEPLOY:-N}
+if [[ ! $START_DEPLOY =~ ^[Yy]$ ]]; then
+  log_info "You can now manually edit ${CONFIG_FILE} if needed. Run ./deploy.sh $INSTANCE_ID${TEST_ARGS:+ $TEST_ARGS} when ready."
+  exit 0
+fi
 
-# 1. Prerequisites
-log_step "Executing prerequisites installation..."
-if bash "$SCRIPT_DIR/scripts/01-prerequisites.sh" "$INSTANCE_ID" $TEST_ARGS; then
+# Section 2: Installation Process
+log_section "2" "Installation Process"
+
+# Prerequisites
+log_subsection "2.1" "Prerequisites Installation"
+if bash "$SCRIPT_DIR/scripts/01-prerequisites.sh" "$INSTANCE_ID" "2.1" $TEST_ARGS; then
     log_success "Prerequisites installation completed"
 else
     log_error "Prerequisites installation failed"
     exit 1
 fi
 
-# 2. Application Installation
-log_step "Executing application installation..."
-if bash "$SCRIPT_DIR/scripts/02-installation.sh" "$INSTANCE_ID" $TEST_ARGS; then
+# Application Installation
+log_subsection "2.2" "Application Installation"
+if bash "$SCRIPT_DIR/scripts/02-installation.sh" "$INSTANCE_ID" "2.2" $TEST_ARGS; then
     log_success "Application installation completed"
 else
     log_error "Application installation failed"
     exit 1
 fi
 
-# 3. Services Configuration
-log_step "Executing services configuration..."
-if bash "$SCRIPT_DIR/scripts/03-services.sh" "$INSTANCE_ID" $TEST_ARGS; then
+# Services Configuration
+log_subsection "2.3" "Services Configuration"
+if bash "$SCRIPT_DIR/scripts/03-services.sh" "$INSTANCE_ID" "2.3" $TEST_ARGS; then
     log_success "Services configuration completed"
 else
     log_error "Services configuration failed"
     exit 1
 fi
 
-# 4. Startup and Verification
-log_step "Executing startup and verification..."
-if bash "$SCRIPT_DIR/scripts/04-startup.sh" "$INSTANCE_ID" $TEST_ARGS; then
+# Startup and Verification
+log_subsection "2.4" "Startup and Verification"
+if bash "$SCRIPT_DIR/scripts/04-startup.sh" "$INSTANCE_ID" "2.4" $TEST_ARGS; then
     log_success "Startup and verification completed"
 else
     log_error "Startup and verification failed"

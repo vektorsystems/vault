@@ -10,17 +10,29 @@ source "$SCRIPT_DIR/logger.sh"
 source "$SCRIPT_DIR/common.sh"
 
 INSTANCE_ID="$1"
+STEP_PREFIX="$2"
 CONFIG_FILE=".env-deploy-config-${INSTANCE_ID}"
 load_deploy_config "$SCRIPT_DIR" "$SCRIPT_DIR/../$CONFIG_FILE"
 deploy_check_root
+
+# Only show header if running standalone (no step prefix)
+if [ -z "$STEP_PREFIX" ]; then
+  log_header "VAULT AI - SERVICES CONFIGURATION"
+fi
+
 deploy_check_ubuntu
 
-log_header "VAULT AI - SERVICES CONFIGURATION"
+# Check if running on Ubuntu
+if [ "$TEST_DEPLOY" != "1" ]; then
+  if ! is_ubuntu; then
+      log_error "This script is designed for Ubuntu systems only"
+      exit 1
+  fi
+fi
 
-# 2.3 SYSTEMD SERVICE CONFIGURATION
-log_subheader "2.3 Systemd Service Configuration"
+# Systemd Service Configuration
+log_task "Configuring systemd service"
 
-log_step "Creating systemd service file..."
 echo "$(cat <<EOF
 [Unit]
 Description=Vault AI Backend Service
@@ -32,7 +44,7 @@ User=${VAULT_USER}
 Group=${VAULT_GROUP}
 WorkingDirectory=${VAULT_DIR}/backend
 Environment=PATH=${VAULT_DIR}/venv/bin
-ExecStart=${VAULT_DIR}/venv/bin/python -m uvicorn open_webui.main:app --host 0.0.0.0 --port 8080
+ExecStart=${VAULT_DIR}/venv/bin/python -m uvicorn open_webui.main:app --host 0.0.0.0 --port $PORT
 Restart=always
 RestartSec=10
 StandardOutput=journal
@@ -56,10 +68,9 @@ run_cmd systemctl enable ${SERVICE_NAME}
 
 log_success "Systemd service configured successfully"
 
-# 2.4 NGINX CONFIGURATION
-log_subheader "2.4 Nginx Configuration"
+# Nginx Configuration
+log_task "Configuring nginx"
 
-log_step "Creating nginx site configuration..."
 echo "$(cat <<EOF
 server {
     listen 80;
@@ -79,7 +90,7 @@ server {
     
     # Backend API proxy
     location /api/ {
-        proxy_pass http://127.0.0.1:8080;
+        proxy_pass http://127.0.0.1:$PORT;
         proxy_http_version 1.1;
         proxy_set_header Upgrade \$http_upgrade;
         proxy_set_header Connection 'upgrade';
@@ -93,7 +104,7 @@ server {
     
     # WebSocket support
     location /socket.io/ {
-        proxy_pass http://127.0.0.1:8080;
+        proxy_pass http://127.0.0.1:$PORT;
         proxy_http_version 1.1;
         proxy_set_header Upgrade \$http_upgrade;
         proxy_set_header Connection "upgrade";
@@ -105,7 +116,7 @@ server {
     
     # Health check endpoint
     location /health {
-        proxy_pass http://127.0.0.1:8080/health;
+        proxy_pass http://127.0.0.1:$PORT/health;
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
@@ -122,28 +133,21 @@ server {
 EOF
 )" | run_cmd tee /etc/nginx/sites-available/${NGINX_SITE} > /dev/null
 
-log_step "Enabling nginx site..."
 run_cmd ln -sf /etc/nginx/sites-available/${NGINX_SITE} /etc/nginx/sites-enabled/
-
-log_step "Testing nginx configuration..."
 run_cmd nginx -t
 
 log_success "Nginx configuration completed"
 
-# 2.5 PERMISSIONS AND SECURITY
-log_subheader "2.5 Permissions and Security"
+# Permissions and Security
+log_task "Configuring permissions and security"
 
-log_step "Setting correct permissions..."
 run_cmd chown -R $VAULT_USER:$VAULT_GROUP $VAULT_DIR
 run_cmd chown -R $VAULT_USER:$VAULT_GROUP /var/log/vault-ai-${INSTANCE_ID}
-
-log_step "Setting secure file permissions..."
 run_cmd find $VAULT_DIR -type f -exec chmod 644 {} \;
 run_cmd find $VAULT_DIR -type d -exec chmod 755 {} \;
 run_cmd chmod +x $VAULT_DIR/venv/bin/*
 run_cmd chmod 600 $VAULT_DIR/.env
 
-log_step "Creating log rotation configuration..."
 echo "$(cat <<EOF
 /var/log/vault-ai-${INSTANCE_ID}/*.log {
     daily

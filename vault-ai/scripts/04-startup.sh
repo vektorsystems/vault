@@ -10,21 +10,27 @@ source "$SCRIPT_DIR/logger.sh"
 source "$SCRIPT_DIR/common.sh"
 
 INSTANCE_ID="$1"
+STEP_PREFIX="$2"
 CONFIG_FILE=".env-deploy-config-${INSTANCE_ID}"
 load_deploy_config "$SCRIPT_DIR" "$SCRIPT_DIR/../$CONFIG_FILE"
 
-log_header "VAULT AI - STARTUP AND VERIFICATION"
+# Only show header if running standalone (no step prefix)
+if [ -z "$STEP_PREFIX" ]; then
+  log_header "VAULT AI - STARTUP AND VERIFICATION"
+fi
 
-# 2.4 STARTUP AND VERIFICATION
-log_subheader "2.4 Startup and Verification"
+deploy_check_ubuntu
 
-log_step "Starting vault-ai service..."
+# Service Startup
+log_task "Starting services"
+
+log_info "Starting vault-ai service..."
 run_cmd systemctl start ${SERVICE_NAME}
 
-log_step "Waiting for service to start..."
+log_info "Waiting for service to start..."
 sleep 5
 
-log_step "Checking service status..."
+log_info "Checking service status..."
 if run_check systemctl is-active --quiet ${SERVICE_NAME}; then
     log_success "Vault AI service is running"
 else
@@ -33,10 +39,10 @@ else
     exit 1
 fi
 
-log_step "Starting nginx service..."
+log_info "Starting nginx service..."
 run_cmd systemctl start nginx
 
-log_step "Checking nginx status..."
+log_info "Checking nginx status..."
 if run_check systemctl is-active --quiet nginx; then
     log_success "Nginx service is running"
 else
@@ -45,13 +51,16 @@ else
     exit 1
 fi
 
-log_step "Testing backend health endpoint..."
+# Health Checks
+log_task "Running health checks"
+
+log_info "Testing backend health endpoint..."
 if [ "$TEST_DEPLOY" = "1" ]; then
     log_info "[test] Simulating backend health check success"
     log_success "Backend health check passed"
 else
     for i in {1..30}; do
-        if run_check curl -s http://localhost:8080/health | grep -q "true"; then
+        if run_check curl -s http://localhost:$PORT/health | grep -q "true"; then
             log_success "Backend health check passed"
             break
         fi
@@ -63,7 +72,7 @@ else
     done
 fi
 
-log_step "Testing nginx proxy..."
+log_info "Testing nginx proxy..."
 if [ "$TEST_DEPLOY" = "1" ]; then
     log_info "[test] Simulating nginx proxy test success"
     log_success "Nginx proxy test passed"
@@ -76,7 +85,7 @@ else
     fi
 fi
 
-log_step "Checking service logs..."
+log_info "Checking service logs..."
 if [ "$TEST_DEPLOY" = "1" ]; then
     log_info "[test] Simulating service logs check success"
     log_success "Service logs show successful startup"
@@ -89,10 +98,10 @@ else
     fi
 fi
 
-# 2.5 FRONTEND BUILD (AFTER ALL VERIFICATIONS)
-log_subheader "2.5 Frontend Build"
+# Frontend Build
+log_task "Building frontend"
 
-log_step "Building frontend..."
+log_info "Building frontend..."
 run_cd $VAULT_DIR
 if run_cmd sudo -u $VAULT_USER npm run build; then
     log_success "Frontend build completed successfully"
@@ -101,7 +110,7 @@ else
     exit 1
 fi
 
-log_step "Verifying frontend build..."
+log_info "Verifying frontend build..."
 if [ "$TEST_DEPLOY" = "1" ]; then
     log_info "[test] Simulating frontend build verification success"
     log_success "Frontend build verified"
@@ -116,15 +125,15 @@ fi
 
 log_success "Startup and verification completed successfully"
 
-# 3. FINAL REPORT
-log_subheader "3. Final Installation Report"
+# Installation Report
+log_task "Installation Summary"
 
-log_info "Installation Summary:"
+log_info "Installation Details:"
 echo "  • Instance ID: ${INSTANCE_ID}"
 echo "  • Installation Directory: ${VAULT_DIR}"
 echo "  • Service Name: ${SERVICE_NAME}"
 echo "  • Nginx Site: ${NGINX_SITE}"
-echo "  • Backend Port: 8080"
+echo "  • Backend Port: $PORT"
 echo "  • Frontend: http://localhost"
 echo "  • Health Check: http://localhost/health"
 

@@ -10,12 +10,17 @@ source "$SCRIPT_DIR/logger.sh"
 source "$SCRIPT_DIR/common.sh"
 
 INSTANCE_ID="$1"
+STEP_PREFIX="$2"
 CONFIG_FILE=".env-deploy-config-${INSTANCE_ID}"
 load_deploy_config "$SCRIPT_DIR" "$SCRIPT_DIR/../$CONFIG_FILE"
 deploy_check_root
-deploy_check_ubuntu
 
-log_header "VAULT AI - PREREQUISITES INSTALLATION"
+# Only show header if running standalone (no step prefix)
+if [ -z "$STEP_PREFIX" ]; then
+  log_header "VAULT AI - PREREQUISITES INSTALLATION"
+fi
+
+deploy_check_ubuntu
 
 # Check if running on Ubuntu
 if [ "$TEST_DEPLOY" != "1" ]; then
@@ -28,8 +33,8 @@ fi
 UBUNTU_VERSION=$(get_ubuntu_version)
 log_info "Detected Ubuntu version: $UBUNTU_VERSION"
 
-# 1.1 VERIFICATION AND SYSTEM UPDATES
-log_subheader "1.1 System Dependencies Verification and Updates"
+# System Dependencies
+log_task "Installing system dependencies"
 
 run_cmd apt update
 run_cmd apt upgrade -y
@@ -54,7 +59,7 @@ run_cmd apt install -y pkg-config
 log_success "Basic system dependencies installed successfully"
 
 # Verify installations
-log_step "Verifying installations..."
+log_task "Verifying installations"
 
 if command_exists python${PYTHON_VERSION}; then
     log_success "Python $PYTHON_VERSION installed: $(python${PYTHON_VERSION} --version)"

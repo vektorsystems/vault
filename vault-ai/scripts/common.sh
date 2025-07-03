@@ -6,36 +6,31 @@
 
 # Ejecuta un comando, loguea y maneja errores. Si TEST_DEPLOY=1, solo imprime el comando.
 run_cmd() {
-    local cmd="$*"
     if [ "$TEST_DEPLOY" = "1" ]; then
-        log_info "[test] executing command: $cmd"
+        log_info "[TEST] Would run: $*"
         return 0
     fi
-    log_info "[exec] $cmd"
-    eval "$cmd"
-    local status=$?
-    if [ $status -ne 0 ]; then
-        log_error "Command failed: $cmd"
-        exit $status
+
+    if eval "$*"; then
+        log_success "${3:-Command completed successfully}"
+        return 0
+    else
+        log_error "${2:-Command failed}"
+        return 1
     fi
-    return 0
 }
 
 # Carga la configuración de despliegue
 load_deploy_config() {
     local script_dir="$1"
-    local config_path=""
-    if [ -n "$2" ]; then
-      config_path="$2"
-    else
-      config_path="$(cd "$script_dir/.." && pwd)/.env-deploy-config"
+    local config_file="$2"
+
+    if [ ! -f "$config_file" ]; then
+        log_error "Config file not found: $config_file"
+        exit 1
     fi
-    if [ -f "$config_path" ]; then
-      export $(grep -v '^#' "$config_path" | xargs)
-    else
-      log_error "No se encontró el archivo de configuración $config_path"
-      exit 1
-    fi
+
+    source "$config_file"
 }
 
 # Verifica si es root, excepto en modo test
@@ -61,17 +56,19 @@ deploy_check_ubuntu() {
 # Simula o ejecuta cd según el modo
 run_cd() {
     local dir="$1"
+    local error_msg="${2:-Failed to change directory to $dir}"
+
     if [ "$TEST_DEPLOY" = "1" ]; then
-        log_info "[test] cd $dir"
+        log_info "[TEST] Would change directory to: $dir"
         return 0
     fi
-    cd "$dir"
-    local status=$?
-    if [ $status -ne 0 ]; then
-        log_error "cd failed: $dir"
-        exit $status
+
+    if cd "$dir"; then
+        return 0
+    else
+        log_error "$error_msg"
+        return 1
     fi
-    return 0
 }
 
 dir_exists() {
@@ -90,13 +87,18 @@ file_exists() {
 
 # Simula o ejecuta un comando de verificación/chequeo (status, curl, etc.)
 run_check() {
-    local cmd="$*"
     if [ "$TEST_DEPLOY" = "1" ]; then
-        log_info "[test] check: $cmd (simulated success)"
+        log_info "[TEST] Would check: $*"
         return 0
     fi
-    eval "$cmd"
-    return $?
+
+    if eval "$*" >/dev/null 2>&1; then
+        log_success "${3:-Check passed}"
+        return 0
+    else
+        log_error "${2:-Check failed}"
+        return 1
+    fi
 }
 
 export -f run_cmd
